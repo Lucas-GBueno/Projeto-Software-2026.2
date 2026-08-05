@@ -1,44 +1,5 @@
 ﻿# Projeto-Software-2026.2
+ *Diagrama de classes*
 
-classDiagram
-    class Midia {
-        <<abstract>>
-        +id_deezer : int
-        +titulo : String
-        +calcular_duracao()* int
-        +exibir_info()* String
-    }
+<img width="742" height="721" alt="image" src="https://github.com/user-attachments/assets/7c6c17a4-0c68-4ae8-bdc7-0763d9820c56" />
 
-    class FaixaMusical {
-        +artista : String
-        +duracao_segundos : int
-        -_avaliacao : float
-        +avaliacao() float
-        +calcular_duracao() int
-        +exibir_info() String
-    }
-
-    class Album {
-        -_faixas : List~FaixaMusical~
-        +adicionar_faixa(faixa: FaixaMusical)
-        +calcular_duracao() int
-        +exibir_info() String
-    }
-
-    class Playlist {
-        -_itens : List~Midia~
-        +adicionar_item(item: Midia)
-        +calcular_duracao() int
-        +exibir_info() String
-    }
-
-    class Biblioteca {
-        -_colecao : Map~int, Midia~
-        +adicionar_midia(midia: Midia) bool
-        +listar_biblioteca()
-    }
-
-    Midia <|-- FaixaMusical
-    Midia <|-- Album
-    Midia <|-- Playlist
-    Biblioteca o-- Midia : contém
