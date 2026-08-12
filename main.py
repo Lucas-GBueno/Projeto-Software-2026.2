@@ -9,13 +9,13 @@ def menu_principal():
     print("           🎧 CATÁLOGO MUSICAL & DEEZER 🎧")
     print("═"*52)
     print("┌──────────────────────────────────────────────────┐")
-    print("│  1. 🔍 Buscar música e avaliar          (RF1)   │")
-    print("│  2. ➕ Adicionar música à biblioteca    (RF2)   │")
-    print("│  3. 💿 Buscar e guardar álbum da música (RF3)   │")
-    print("│  4. 📋 Criar nova Playlist vazia                │")
-    print("│  5. ✏️  Adicionar item na Playlist       (RF3)   │")
-    print("│  6. 📥 Adicionar Playlist à biblioteca          │")
-    print("│  7. 📚 Listar biblioteca e tempos       (RF3)   │")
+    print("│  1. 🔍 Buscar música e avaliar          (RF1)    │")
+    print("│  2. ➕ Adicionar música à biblioteca    (RF2)    │")
+    print("│  3. 💿 Buscar e guardar álbum da música (RF3)    │")
+    print("│  4. 📋 Criar nova Playlist vazia                 │")
+    print("│  5. ✏️  Adicionar item na Playlist       (RF3)    │")
+    print("│  6. 📥 Adicionar Playlist à biblioteca           │")
+    print("│  7. Feed da Biblioteca (Listar tudo) (RF3/RF4)   │")   
     print("│  0. 🚪 Sair                                      │")
     print("└──────────────────────────────────────────────────┘")
 
@@ -151,6 +151,7 @@ if __name__ == "__main__":
 
         elif opcao == '7':
             # POLIMORFISMO NA PRÁTICA: O método calcular_duracao resolve a vida de qualquer mídia que estiver na lista.
+            print("\n🌟 --- FEED DA BIBLIOTECA ---")
             bib.listar_biblioteca()
 
         elif opcao == '0':
