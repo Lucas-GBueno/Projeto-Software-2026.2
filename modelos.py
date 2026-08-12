@@ -71,20 +71,11 @@ class Album(Midia, Reproduzivel):
         return sum(faixa.calcular_duracao() for faixa in self._faixas)
 
     def exibir_info(self):
-<<<<<<< HEAD
-        texto = f"💿 Álbum: {self.titulo} ({len(self._faixas)} faixas) ⏱️ Duração total: {self.calcular_duracao()}s"
-        # Agora o álbum exibe visualmente todas as faixas que estão dentro dele
-        for f in self._faixas:
-            texto += f"\n      ↳ 🎵 {f.titulo}"
-        return texto
-    
-=======
         return f"💿 Álbum: {self.titulo} ({len(self._faixas)} faixas) ⏱️ Duração total: {self.calcular_duracao()}s"
 
     def play(self): #método para reprodução
             return f"> Tocando agora: {self.titulo} - {self.artista}"
 
->>>>>>> a3221d7cb1507621575ae569a541a5bf6aaf34b7
 # HERANÇA: Playlist "é uma" Midia.
 class Playlist(Midia, Reproduzivel):
     def __init__(self, id_deezer, titulo):
