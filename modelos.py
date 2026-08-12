@@ -93,7 +93,7 @@ class Playlist(Midia, Reproduzivel):
         return f"📋 Playlist: {self.titulo} ({len(self._itens)} itens) ⏱️ Duração total: {self.calcular_duracao()}s"
 
     def play(self): #método para reprodução
-        f"> Iniciando reprodução da playlist '{self.titulo}' ({len(self._itens)} itens)..."
+        return f"> Iniciando reprodução da playlist '{self.titulo}' ({len(self._itens)} itens)..."
 
 class Biblioteca:
     def __init__(self):
