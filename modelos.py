@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-# ABSTRAÇÃO: A classe Midia é um molde incompleto. Não pode ser instanciada diretamente.
+# classe abstrata para mídias gerais
 class Midia(ABC):
     def __init__(self, id_deezer, titulo):
         self.id_deezer = id_deezer
@@ -15,8 +15,14 @@ class Midia(ABC):
     def exibir_info(self):
         pass
 
-# HERANÇA: FaixaMusical "é uma" Midia.
-class FaixaMusical(Midia):
+#classe abstrata para midias reproduziveis 
+class Reproduzivel(ABC):
+    @abstractmethod
+    def play(self):
+        pass
+
+# HERANÇA: FaixaMusical "é uma" Midia reproduzivel
+class FaixaMusical(Midia, Reproduzivel):
     def __init__(self, id_deezer, titulo, artista, duracao_segundos, avaliacao=None):
         super().__init__(id_deezer, titulo)
         self.artista = artista
@@ -47,6 +53,9 @@ class FaixaMusical(Midia):
         nota = f"⭐ {self.avaliacao}/5" if self.avaliacao is not None else "⭐ Sem nota"
         return f"🎵 Faixa: {self.titulo} - {self.artista} ⏱️ {self.calcular_duracao()}s | {nota}"
 
+    def play(self): #método para reprodução
+        return f"> Tocando agora: {self.titulo} - {self.artista}"
+    
 # HERANÇA: Album "é uma" Midia.
 class Album(Midia):
     def __init__(self, id_deezer, titulo):
@@ -65,7 +74,7 @@ class Album(Midia):
         return f"💿 Álbum: {self.titulo} ({len(self._faixas)} faixas) ⏱️ Duração total: {self.calcular_duracao()}s"
 
 # HERANÇA: Playlist "é uma" Midia.
-class Playlist(Midia):
+class Playlist(Midia, Reproduzivel):
     def __init__(self, id_deezer, titulo):
         super().__init__(id_deezer, titulo)
         self._itens = []
@@ -79,6 +88,9 @@ class Playlist(Midia):
 
     def exibir_info(self):
         return f"📋 Playlist: {self.titulo} ({len(self._itens)} itens) ⏱️ Duração total: {self.calcular_duracao()}s"
+
+    def play(self): #método para reprodução
+        return f"> Tocando agora: {self.titulo} - {self.artista}"
 
 class Biblioteca:
     def __init__(self):
