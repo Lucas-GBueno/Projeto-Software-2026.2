@@ -57,7 +57,7 @@ class FaixaMusical(Midia, Reproduzivel):
         return f"> Tocando agora: {self.titulo} - {self.artista}"
     
 # HERANÇA: Album "é uma" Midia.
-class Album(Midia):
+class Album(Midia, Reproduzivel):
     def __init__(self, id_deezer, titulo):
         super().__init__(id_deezer, titulo)
         # ENCAPSULAMENTO / COMPOSIÇÃO: O álbum tem faixas escondidas internamente.
@@ -72,6 +72,9 @@ class Album(Midia):
 
     def exibir_info(self):
         return f"💿 Álbum: {self.titulo} ({len(self._faixas)} faixas) ⏱️ Duração total: {self.calcular_duracao()}s"
+
+    def play(self): #método para reprodução
+            return f"> Tocando agora: {self.titulo} - {self.artista}"
 
 # HERANÇA: Playlist "é uma" Midia.
 class Playlist(Midia, Reproduzivel):
@@ -90,7 +93,7 @@ class Playlist(Midia, Reproduzivel):
         return f"📋 Playlist: {self.titulo} ({len(self._itens)} itens) ⏱️ Duração total: {self.calcular_duracao()}s"
 
     def play(self): #método para reprodução
-        return f"> Tocando agora: {self.titulo} - {self.artista}"
+        f"> Iniciando reprodução da playlist '{self.titulo}' ({len(self._itens)} itens)..."
 
 class Biblioteca:
     def __init__(self):
