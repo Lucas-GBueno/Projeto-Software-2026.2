@@ -1,8 +1,15 @@
 import random
 # Importa do nosso arquivo de modelos lógicos
-from modelos import Biblioteca, Playlist
+from modelos import Biblioteca, Playlist, Reproduzivel
 # Importa do nosso arquivo de comunicação web
 from api import buscar_faixa_deezer, buscar_album_deezer
+
+def simular_player(midia):
+    # Checa se o objeto tem a interface Reproduzivel
+    if isinstance(midia, Reproduzivel):
+        print(midia.play())
+    else:
+        print(f" Erro de Sistema: O item '{midia.titulo}' é um metadado descritivo e não pode ser tocado diretamente.")
 
 def menu_principal():
     print("\n" + "═"*52)
@@ -16,6 +23,7 @@ def menu_principal():
     print("│  5. ✏️  Adicionar item na Playlist       (RF3)   │")
     print("│  6. 📥 Adicionar Playlist à biblioteca          │")
     print("│  7. 📚 Listar biblioteca e tempos       (RF3)   │")
+    print("│  8. 📱 Testar Player                    (RF4)    │")
     print("│  0. 🚪 Sair                                      │")
     print("└──────────────────────────────────────────────────┘")
 
@@ -107,6 +115,7 @@ if __name__ == "__main__":
                 print("\nO que você quer adicionar nela?")
                 print("1. 🎵 Música avaliada")
                 print("2. 💿 Álbum buscado")
+                print("3. 📋 Outra Playlist ")
                 tipo = input("👉 Escolha: ").strip()
 
                 if tipo == '1':
@@ -130,6 +139,18 @@ if __name__ == "__main__":
                         # AGREGAÇÃO E POLIMORFISMO: A MESMA função aceita um Álbum, porque ambos são Midia.
                         pl_selecionada.adicionar_item(albuns_buscados[escolha_a])
                         print("✅ Álbum adicionado à playlist!")
+
+                elif tipo == '3':
+                    # RF6: Adicionando uma Playlist dentro de outra Playlist
+                    outras = [p for p in playlists_criadas if p != pl_selecionada]
+                    if not outras:
+                        print("⚠️ Não há outras playlists disponíveis para incluir.")
+                    else:
+                        for i, p in enumerate(outras):
+                            print(f"  {i+1}. {p.titulo}")
+                        escolha_p = int(input("👉 Qual playlist quer incluir dentro desta? (Número): ")) - 1
+                        pl_selecionada.adicionar_item(outras[escolha_p])
+                        print("✅ Sub-playlist adicionada com sucesso! Duração e itens vinculados recursivamente.")
                 else:
                     print("❌ Inválido.")
                     
@@ -152,6 +173,33 @@ if __name__ == "__main__":
         elif opcao == '7':
             # POLIMORFISMO NA PRÁTICA: O método calcular_duracao resolve a vida de qualquer mídia que estiver na lista.
             bib.listar_biblioteca()
+
+        elif opcao == '8': # Imaginando que adicionamos uma opção 8 no menu
+            print("\n🎧 --- SIMULADOR DE PLAYER (RF5) ---")
+            busca = input("👉 Digite o nome do item que deseja tentar reproduzir: ").strip().lower()
+            resultados = [midia for midia in bib._colecao.values() if busca in midia.titulo.lower()]
+            if not resultados:
+                print(f"❌ Nenhum item encontrado contendo '{busca}'.")
+            elif len(resultados) == 1: #assume que unico resultado é o procurado
+                item_selecionado = resultados[0]
+                print(f"\n▶️ Encontrado: {item_selecionado.titulo}. Solicitando reprodução ao Player...")
+                simular_player(item_selecionado)
+            else: #lista de resultados para usuário escolher
+                print(f"\n⚠️ Foram encontrados {len(resultados)} itens com esse nome. Qual você deseja?")
+                for i, item in enumerate(resultados):
+                    print(f"  {i + 1}. {item.exibir_info()}")
+                
+                try:
+                    escolha = int(input("👉 Digite o número correspondente: ")) - 1
+                    
+                    if 0 <= escolha < len(resultados):
+                        item_selecionado = resultados[escolha]
+                        print(f"\n▶️ Solicitando reprodução ao Player...")
+                        simular_player(item_selecionado)
+                    else:
+                        print("❌ Número digitado não existe na lista de resultados.")
+                except ValueError:
+                    print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '0':
             print("\n👋 Saindo do sistema... Até logo!")
