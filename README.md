@@ -18,5 +18,6 @@ O projeto foi refatorado e modularizado para aplicar os conceitos de Programa√ß√
  
  *Diagrama de classes*
 
-<img width="742" height="721" alt="image" src="https://github.com/user-attachments/assets/7c6c17a4-0c68-4ae8-bdc7-0763d9820c56" />
+<img width="1333" height="1911" alt="diagrama_1208 png" src="https://github.com/user-attachments/assets/751b4313-2b33-44de-9f4b-37cd6f117e49" />
+
 
