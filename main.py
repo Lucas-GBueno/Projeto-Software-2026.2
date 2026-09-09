@@ -2,7 +2,7 @@ import random
 # Importa do nosso arquivo de modelos lógicos
 from modelos import Biblioteca, Playlist, Reproduzivel
 # Importa do nosso arquivo de comunicação web
-from api import buscar_faixa_deezer, buscar_album_deezer
+from api import buscar_faixa, buscar_album
 
 def simular_player(midia):
     # Checa se o objeto tem a interface Reproduzivel
@@ -46,7 +46,7 @@ if __name__ == "__main__":
             nome = input("Digite o nome da música: ").strip()
             
             if nome:
-                musica_encontrada, id_album = buscar_faixa_deezer(nome)
+                musica_encontrada, id_album = buscar_faixa(nome)
                 
                 if musica_encontrada:
                     ultimo_id_album = id_album
@@ -84,7 +84,7 @@ if __name__ == "__main__":
             print("\n💿 --- BUSCAR ÁLBUM COMPLETO ---")
             if ultimo_id_album:
                 print("🌐 Buscando o álbum completo na API da Deezer...")
-                album = buscar_album_deezer(ultimo_id_album)
+                album = buscar_album(ultimo_id_album)
                 if album:
                     albuns_buscados.append(album)
                     bib.adicionar_midia(album)
