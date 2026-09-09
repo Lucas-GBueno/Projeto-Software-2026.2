@@ -174,32 +174,28 @@ if __name__ == "__main__":
             # POLIMORFISMO NA PRÁTICA: O método calcular_duracao resolve a vida de qualquer mídia que estiver na lista.
             bib.listar_biblioteca()
 
-        elif opcao == '8': # Imaginando que adicionamos uma opção 8 no menu
-            print("\n🎧 --- SIMULADOR DE PLAYER (RF5) ---")
-            busca = input("👉 Digite o nome do item que deseja tentar reproduzir: ").strip().lower()
-            resultados = [midia for midia in bib._colecao.values() if busca in midia.titulo.lower()]
-            if not resultados:
-                print(f"❌ Nenhum item encontrado contendo '{busca}'.")
-            elif len(resultados) == 1: #assume que unico resultado é o procurado
-                item_selecionado = resultados[0]
-                print(f"\n▶️ Encontrado: {item_selecionado.titulo}. Solicitando reprodução ao Player...")
-                simular_player(item_selecionado)
-            else: #lista de resultados para usuário escolher
-                print(f"\n⚠️ Foram encontrados {len(resultados)} itens com esse nome. Qual você deseja?")
-                for i, item in enumerate(resultados):
-                    print(f"  {i + 1}. {item.exibir_info()}")
-                
-                try:
-                    escolha = int(input("👉 Digite o número correspondente: ")) - 1
-                    
-                    if 0 <= escolha < len(resultados):
-                        item_selecionado = resultados[escolha]
-                        print(f"\n▶️ Solicitando reprodução ao Player...")
-                        simular_player(item_selecionado)
-                    else:
-                        print("❌ Número digitado não existe na lista de resultados.")
-                except ValueError:
-                    print("❌ Entrada inválida! Digite apenas o número.")
+        elif opcao == '8': 
+            print("\n🎧 --- SIMULADOR DE PLAYER ---")
+            if not bib._colecao:
+                print("⚠️  A biblioteca está vazia. Adicione algo antes de tentar reproduzir (Opções 2 ou 6).")
+                continue
+
+            itens_biblioteca = list(bib._colecao.values())
+            print("📚 Itens na biblioteca:")
+            for i, item in enumerate(itens_biblioteca):
+                print(f"  {i + 1}. {item.exibir_info()}")
+
+            try:
+                escolha = int(input("👉 Digite o número do item que deseja reproduzir: ")) - 1
+
+                if 0 <= escolha < len(itens_biblioteca):
+                    item_selecionado = itens_biblioteca[escolha]
+                    print(f"\n▶️ Solicitando reprodução ao Player...")
+                    simular_player(item_selecionado)
+                else:
+                    print("❌ Número digitado não existe na lista de resultados.")
+            except ValueError:
+                print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '0':
             print("\n👋 Saindo do sistema... Até logo!")
