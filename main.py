@@ -62,6 +62,9 @@ if __name__ == "__main__":
                             break
                         except ValueError as e:
                             print(f"{e}")
+                else:
+                    # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
+                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — tente outra grafia.")
 
         elif opcao == '2':
             print("\n➕ --- ADICIONAR MÚSICA À BIBLIOTECA ---")
@@ -85,6 +88,9 @@ if __name__ == "__main__":
                 if album:
                     albuns_buscados.append(album)
                     bib.adicionar_midia(album)
+                else:
+                    # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
+                    print("🔍 Nenhum resultado encontrado para o álbum — tente buscar a música novamente.")
             else:
                 print("⚠️  Busque uma música primeiro para encontrar o álbum correspondente.")
 
@@ -174,7 +180,7 @@ if __name__ == "__main__":
             # POLIMORFISMO NA PRÁTICA: O método calcular_duracao resolve a vida de qualquer mídia que estiver na lista.
             bib.listar_biblioteca()
 
-        elif opcao == '8': 
+        elif opcao == '8':
             print("\n🎧 --- SIMULADOR DE PLAYER ---")
             if not bib._colecao:
                 print("⚠️  A biblioteca está vazia. Adicione algo antes de tentar reproduzir (Opções 2 ou 6).")
