@@ -1,6 +1,6 @@
 import random
 # Importa do nosso arquivo de modelos lógicos
-from modelos import Biblioteca, Playlist, Reproduzivel
+from modelos import Biblioteca, Playlist, Reproduzivel, CRITERIOS_ORDENACAO
 # Importa do nosso arquivo de comunicação web
 from api import buscar_faixa, buscar_album
 
@@ -24,6 +24,8 @@ def menu_principal():
     print("│  6. 📥 Adicionar Playlist à biblioteca          │")
     print("│  7. 📚 Listar biblioteca e tempos       (RF3)   │")
     print("│  8. 📱 Testar Player                    (RF4)    │")
+    print("│  9. 🗑️  Remover item da biblioteca      (RF9)    │")
+    print("│ 10. 🔀 Listar biblioteca ordenada       (RF10)   │")
     print("│  0. 🚪 Sair                                      │")
     print("└──────────────────────────────────────────────────┘")
 
@@ -202,6 +204,38 @@ if __name__ == "__main__":
                     print("❌ Número digitado não existe na lista de resultados.")
             except ValueError:
                 print("❌ Entrada inválida! Digite apenas o número.")
+
+        elif opcao == '9':
+            print("\n🗑️  --- REMOVER ITEM DA BIBLIOTECA (RF9) ---")
+            if not bib._colecao:
+                print("⚠️  A biblioteca está vazia.")
+                continue
+
+            itens_biblioteca = list(bib._colecao.values())
+            print("📚 Itens na biblioteca:")
+            for i, item in enumerate(itens_biblioteca):
+                print(f"  {i + 1}. {item.exibir_info()}")
+
+            try:
+                escolha = int(input("👉 Digite o número do item que deseja remover: ")) - 1
+
+                if 0 <= escolha < len(itens_biblioteca):
+                    item_selecionado = itens_biblioteca[escolha]
+                    # RF9: remoção consistente — a Biblioteca trata sozinha as
+                    # referências existentes em playlists (inclusive aninhadas).
+                    bib.remover_midia(item_selecionado.id_deezer, playlists_criadas)
+                else:
+                    print("❌ Número digitado não existe na lista de resultados.")
+            except ValueError:
+                print("❌ Entrada inválida! Digite apenas o número.")
+
+
+        elif opcao == '10':
+            print("\n🔀 --- LISTAR BIBLIOTECA ORDENADA (RF10) ---")
+            print("Critérios disponíveis:", ", ".join(CRITERIOS_ORDENACAO.keys()))
+            criterio = input("👉 Digite o critério de ordenação: ").strip().lower()
+            ordem = input("👉 Ordem decrescente? (s/N): ").strip().lower()
+            bib.listar_biblioteca_ordenada(criterio, decrescente=(ordem == 's'))
 
         elif opcao == '0':
             print("\n👋 Saindo do sistema... Até logo!")

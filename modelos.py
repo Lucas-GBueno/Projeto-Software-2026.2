@@ -1,5 +1,26 @@
 from abc import ABC, abstractmethod
 
+# RF10: registrador de critérios de ordenação. Novos critérios são
+# adicionados aqui (ou via registrar_criterio_ordenacao) sem que o método
+# de ordenação da Biblioteca precise ser alterado.
+CRITERIOS_ORDENACAO = {
+    'titulo': lambda midia: midia.titulo.lower(),
+    'duracao': lambda midia: midia.calcular_duracao(),
+    'avaliacao': lambda midia: getattr(midia, 'avaliacao', None) if getattr(midia, 'avaliacao', None) is not None else -1,
+}
+
+
+def registrar_criterio_ordenacao(nome, funcao_chave):
+    """
+    RF10: Permite estender a ordenação com um novo critério sem tocar no
+    código de ordenação existente (nem nos critérios já registrados).
+
+    Exemplo de uso futuro, se o professor pedir ordenação por ano:
+        registrar_criterio_ordenacao('ano', lambda midia: midia.ano)
+    """
+    CRITERIOS_ORDENACAO[nome] = funcao_chave
+
+
 # classe abstrata para mídias gerais
 class Midia(ABC):
     def __init__(self, id_deezer, titulo):
@@ -85,6 +106,30 @@ class Playlist(Midia, Reproduzivel):
     def adicionar_item(self, item):
         self._itens.append(item)
 
+    def remover_item(self, item):
+        """RF9: Remove uma referência direta a 'item' desta playlist, se existir."""
+        if item in self._itens:
+            self._itens.remove(item)
+            return True
+        return False
+
+    def remover_item_recursivo(self, item):
+        """
+        RF9: Remove referências a 'item' nesta playlist E em qualquer
+        sub-playlist aninhada dentro dela (RF6 permite playlist dentro de
+        playlist). Retorna quantas playlists tiveram o item removido, para
+        que quem chamou saiba o alcance real da remoção.
+        """
+        playlists_afetadas = 0
+        if self.remover_item(item):
+            playlists_afetadas += 1
+
+        for sub_item in self._itens:
+            if isinstance(sub_item, Playlist):
+                playlists_afetadas += sub_item.remover_item_recursivo(item)
+
+        return playlists_afetadas
+
     # POLIMORFISMO: Forma própria de calcular a duração.
     def calcular_duracao(self):
         return sum(item.calcular_duracao() for item in self._itens)
@@ -108,6 +153,64 @@ class Biblioteca:
         self._colecao[midia.id_deezer] = midia
         print(f"\n✅ [SUCESSO] '{midia.titulo}' adicionado à biblioteca!")
         return True
+
+    def remover_midia(self, id_midia, playlists=None):
+        """
+        RF9: Remove um item da biblioteca tratando corretamente as
+        referências existentes em playlists.
+
+        Política adotada (documentada aqui por ser uma decisão de design):
+        REMOÇÃO EM CASCATA. Ao remover um item da biblioteca, o item também
+        é removido de todas as playlists (e sub-playlists aninhadas) que o
+        referenciam, para nunca deixar uma playlist apontando para um item
+        que não existe mais. O chamador é avisado de quantas playlists
+        foram afetadas.
+        """
+        midia = self._colecao.get(id_midia)
+        if midia is None:
+            print("\n⚠️  Nenhum item com esse identificador foi encontrado na biblioteca.")
+            return False
+
+        playlists_afetadas = 0
+        if playlists:
+            for playlist in playlists:
+                playlists_afetadas += playlist.remover_item_recursivo(midia)
+
+        del self._colecao[id_midia]
+
+        if playlists_afetadas:
+            print(f"\n🗑️  '{midia.titulo}' removido da biblioteca e de {playlists_afetadas} playlist(s) (incluindo sub-playlists) que o continham.")
+        else:
+            print(f"\n🗑️  '{midia.titulo}' removido da biblioteca.")
+        return True
+
+    def listar_biblioteca_ordenada(self, criterio='titulo', decrescente=False):
+        """
+        RF10: Ordena a biblioteca por qualquer critério presente em
+        CRITERIOS_ORDENACAO. Para adicionar um novo critério (ex: 'ano'),
+        basta registrá-lo com registrar_criterio_ordenacao() — este método
+        não precisa ser modificado.
+        """
+        if not self._colecao:
+            print("\n┌─────────────────────────────────────────┐")
+            print("│      📭 Sua biblioteca está vazia.      │")
+            print("└─────────────────────────────────────────┘")
+            return
+
+        funcao_chave = CRITERIOS_ORDENACAO.get(criterio)
+        if funcao_chave is None:
+            disponiveis = ", ".join(CRITERIOS_ORDENACAO.keys())
+            print(f"\n⚠️  Critério '{criterio}' não existe. Critérios disponíveis: {disponiveis}")
+            return
+
+        itens_ordenados = sorted(self._colecao.values(), key=funcao_chave, reverse=decrescente)
+
+        print("\n╔══════════════════════════════════════════════════════════════════╗")
+        print(f"║  📚 BIBLIOTECA ORDENADA POR '{criterio.upper()}'".ljust(69) + "║")
+        print("╠══════════════════════════════════════════════════════════════════╣")
+        for midia in itens_ordenados:
+            print(f"  ▸ {midia.exibir_info()}")
+        print("╚══════════════════════════════════════════════════════════════════╝")
 
     def listar_biblioteca(self):
         if not self._colecao:
