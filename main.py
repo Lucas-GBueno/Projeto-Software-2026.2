@@ -2,7 +2,7 @@ import random
 # Importa do nosso arquivo de modelos lógicos
 from modelos import Biblioteca, Playlist, Reproduzivel
 # Importa do nosso arquivo de comunicação web
-from api import buscar_faixa_deezer, buscar_album_deezer
+from api import buscar_faixa, buscar_album
 
 def simular_player(midia):
     # Checa se o objeto tem a interface Reproduzivel
@@ -46,7 +46,7 @@ if __name__ == "__main__":
             nome = input("Digite o nome da música: ").strip()
             
             if nome:
-                musica_encontrada, id_album = buscar_faixa_deezer(nome)
+                musica_encontrada, id_album = buscar_faixa(nome)
                 
                 if musica_encontrada:
                     ultimo_id_album = id_album
@@ -62,6 +62,9 @@ if __name__ == "__main__":
                             break
                         except ValueError as e:
                             print(f"{e}")
+                else:
+                    # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
+                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — tente outra grafia.")
 
         elif opcao == '2':
             print("\n➕ --- ADICIONAR MÚSICA À BIBLIOTECA ---")
@@ -81,10 +84,13 @@ if __name__ == "__main__":
             print("\n💿 --- BUSCAR ÁLBUM COMPLETO ---")
             if ultimo_id_album:
                 print("🌐 Buscando o álbum completo na API da Deezer...")
-                album = buscar_album_deezer(ultimo_id_album)
+                album = buscar_album(ultimo_id_album)
                 if album:
                     albuns_buscados.append(album)
                     bib.adicionar_midia(album)
+                else:
+                    # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
+                    print("🔍 Nenhum resultado encontrado para o álbum — tente buscar a música novamente.")
             else:
                 print("⚠️  Busque uma música primeiro para encontrar o álbum correspondente.")
 
@@ -174,7 +180,7 @@ if __name__ == "__main__":
             # POLIMORFISMO NA PRÁTICA: O método calcular_duracao resolve a vida de qualquer mídia que estiver na lista.
             bib.listar_biblioteca()
 
-        elif opcao == '8': 
+        elif opcao == '8':
             print("\n🎧 --- SIMULADOR DE PLAYER ---")
             if not bib._colecao:
                 print("⚠️  A biblioteca está vazia. Adicione algo antes de tentar reproduzir (Opções 2 ou 6).")
