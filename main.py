@@ -251,10 +251,26 @@ if __name__ == "__main__":
 
         elif opcao == '10':
             print("\n🔀 --- LISTAR BIBLIOTECA ORDENADA (RF10) ---")
-            print("Critérios disponíveis:", ", ".join(CRITERIOS_ORDENACAO.keys()))
-            criterio = input("👉 Digite o critério de ordenação: ").strip().lower()
-            ordem = input("👉 Ordem decrescente? (s/N): ").strip().lower()
-            bib.listar_biblioteca_ordenada(criterio, decrescente=(ordem == 's'))
+            if not bib._colecao:
+                print("⚠️  A biblioteca está vazia.")
+                continue
+
+            criterios_disponiveis = list(CRITERIOS_ORDENACAO.keys())
+            print("📐 Critérios de ordenação disponíveis:")
+            for i, nome_criterio in enumerate(criterios_disponiveis):
+                print(f"  {i + 1}. {nome_criterio.capitalize()}")
+
+            try:
+                escolha = int(input("\n👉 Digite o número do critério: ")) - 1
+
+                if 0 <= escolha < len(criterios_disponiveis):
+                    criterio_selecionado = criterios_disponiveis[escolha]
+                    ordem = input("👉 Ordem decrescente? (s/N): ").strip().lower()
+                    bib.listar_biblioteca_ordenada(criterio_selecionado, decrescente=(ordem == 's'))
+                else:
+                    print("❌ Número digitado não existe na lista de critérios.")
+            except ValueError:
+                print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '0':
             print("\n👋 Saindo do sistema... Até logo!")
