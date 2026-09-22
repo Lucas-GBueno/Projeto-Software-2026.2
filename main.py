@@ -2,7 +2,7 @@ import random
 # Importa do nosso arquivo de modelos lógicos
 from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO
 # Importa do nosso arquivo de comunicação web
-from api import buscar_faixa, buscar_album
+from api import buscar_faixas, buscar_album
 
 def simular_player(midia):
     # Checa se o objeto tem a interface Reproduzivel
@@ -10,6 +10,24 @@ def simular_player(midia):
         print(midia.play())
     else:
         print(f" Erro de Sistema: O item '{midia.titulo}' é um metadado descritivo e não pode ser tocado diretamente.")
+
+def avaliar_e_guardar(musica, musicas_avaliadas):
+    """
+    RF1: Pede uma nota de 0 a 5 (validada pelo setter de FaixaMusical) e
+    guarda a música avaliada. Extraído como função à parte porque a opção 1
+    agora tem dois caminhos até aqui: resultado único, ou um escolhido
+    dentre vários — ambos terminam chamando esta mesma função.
+    """
+    while True:
+        try:
+            # ENCAPSULAMENTO NA PRÁTICA: O setter da FaixaMusical fará a validação por baixo dos panos.
+            nota = float(input(f"⭐ Dê uma nota de 0 a 5 para '{musica.titulo}': ").replace(',', '.'))
+            musica.avaliacao = nota
+            musicas_avaliadas.append(musica)
+            print("🌟 Nota salva com sucesso!")
+            break
+        except ValueError as e:
+            print(f"{e}")
 
 def menu_principal():
     print("\n" + "═"*52)
@@ -47,24 +65,35 @@ if __name__ == "__main__":
             nome = input("Digite o nome da música: ").strip()
             
             if nome:
-                musica_encontrada = buscar_faixa(nome)
-                
-                if musica_encontrada:
-                    print(f"\n✨ Encontrada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista} (⏱️ {musica_encontrada.duracao_segundos}s)")
-                    
-                    while True:
-                        try:
-                            # ENCAPSULAMENTO NA PRÁTICA: O setter da FaixaMusical fará a validação por baixo dos panos.
-                            nota = float(input(f"⭐ Dê uma nota de 0 a 5 para '{musica_encontrada.titulo}': ").replace(',', '.'))
-                            musica_encontrada.avaliacao = nota
-                            musicas_avaliadas.append(musica_encontrada)
-                            print("🌟 Nota salva com sucesso!")
-                            break
-                        except ValueError as e:
-                            print(f"{e}")
-                else:
+                resultados = buscar_faixas(nome)
+
+                if not resultados:
                     # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
                     print(f"🔍 Nenhum resultado encontrado para '{nome}' — tente outra grafia.")
+
+                elif len(resultados) == 1:
+                    musica_encontrada = resultados[0]
+                    print(f"\n✨ Encontrada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista} (⏱️ {musica_encontrada.duracao_segundos}s)")
+                    avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
+
+                else:
+                    # RF1 (extensão): mais de um resultado — lista numerado, no mesmo
+                    # padrão do resto do sistema, para o usuário escolher a faixa certa.
+                    print(f"\n🔎 {len(resultados)} resultados encontrados para '{nome}':")
+                    for i, m in enumerate(resultados):
+                        print(f"  {i + 1}. 🎵 {m.titulo} - 🎤 {m.artista} (⏱️ {m.duracao_segundos}s)")
+
+                    try:
+                        escolha = int(input("\n👉 Digite o número da música desejada: ")) - 1
+
+                        if 0 <= escolha < len(resultados):
+                            musica_encontrada = resultados[escolha]
+                            print(f"\n✨ Selecionada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista}")
+                            avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
+                        else:
+                            print("❌ Número digitado não existe na lista de resultados.")
+                    except ValueError:
+                        print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '2':
             print("\n➕ --- ADICIONAR MÚSICA À BIBLIOTECA ---")
