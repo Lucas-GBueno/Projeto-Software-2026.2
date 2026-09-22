@@ -1,6 +1,6 @@
 import random
 # Importa do nosso arquivo de modelos lógicos
-from modelos import Biblioteca, Playlist, Reproduzivel, CRITERIOS_ORDENACAO
+from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO
 # Importa do nosso arquivo de comunicação web
 from api import buscar_faixa, buscar_album
 
@@ -37,7 +37,6 @@ if __name__ == "__main__":
     musicas_avaliadas = []
     albuns_buscados = []
     playlists_criadas = []
-    ultimo_id_album = None
 
     while True:
         menu_principal()
@@ -48,10 +47,9 @@ if __name__ == "__main__":
             nome = input("Digite o nome da música: ").strip()
             
             if nome:
-                musica_encontrada, id_album = buscar_faixa(nome)
+                musica_encontrada = buscar_faixa(nome)
                 
                 if musica_encontrada:
-                    ultimo_id_album = id_album
                     print(f"\n✨ Encontrada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista} (⏱️ {musica_encontrada.duracao_segundos}s)")
                     
                     while True:
@@ -84,17 +82,38 @@ if __name__ == "__main__":
 
         elif opcao == '3':
             print("\n💿 --- BUSCAR ÁLBUM COMPLETO ---")
-            if ultimo_id_album:
-                print("🌐 Buscando o álbum completo na API da Deezer...")
-                album = buscar_album(ultimo_id_album)
-                if album:
-                    albuns_buscados.append(album)
-                    bib.adicionar_midia(album)
-                else:
-                    # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
-                    print("🔍 Nenhum resultado encontrado para o álbum — tente buscar a música novamente.")
+            # RF3 (correção): lista as faixas que já estão na BIBLIOTECA (não mais
+            # "a última pesquisada"), seguindo o mesmo padrão de índice das outras opções.
+            faixas_na_biblioteca = [m for m in bib._colecao.values() if isinstance(m, FaixaMusical)]
+
+            if not faixas_na_biblioteca:
+                print("⚠️  Nenhuma música na biblioteca ainda. Adicione uma primeiro (Opção 2).")
             else:
-                print("⚠️  Busque uma música primeiro para encontrar o álbum correspondente.")
+                print("🎵 Músicas na biblioteca:")
+                for i, m in enumerate(faixas_na_biblioteca):
+                    print(f"  {i + 1}. {m.titulo} - {m.artista}")
+
+                try:
+                    escolha = int(input("\n👉 Digite o número da música cujo álbum você quer buscar: ")) - 1
+
+                    if 0 <= escolha < len(faixas_na_biblioteca):
+                        faixa_selecionada = faixas_na_biblioteca[escolha]
+
+                        if faixa_selecionada.id_album is None:
+                            print("⚠️  Essa música não tem um álbum de origem associado.")
+                        else:
+                            print("🌐 Buscando o álbum completo na API da Deezer...")
+                            album = buscar_album(faixa_selecionada.id_album)
+                            if album:
+                                albuns_buscados.append(album)
+                                bib.adicionar_midia(album)
+                            else:
+                                # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
+                                print("🔍 Nenhum resultado encontrado para o álbum — tente buscar a música novamente.")
+                    else:
+                        print("❌ Número digitado não existe na lista de músicas.")
+                except ValueError:
+                    print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '4':
             print("\n📋 --- CRIAR PLAYLIST ---")

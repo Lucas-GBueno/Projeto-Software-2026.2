@@ -15,15 +15,15 @@ def _buscar_faixa_deezer(nome_musica):
         dados = requests.get(url, timeout=10).json()
     except Exception:
         # RF7: falha de rede/formatação -> condição recuperável, não um erro fatal
-        return None, None
+        return None
 
     if not dados.get('data'):
         # RF7: busca sem resultados -> condição normal
-        return None, None
+        return None
 
     f = dados['data'][0]
-    faixa = FaixaMusical(f['id'], f['title'], f['artist']['name'], f['duration'])
-    return faixa, f['album']['id']
+    faixa = FaixaMusical(f['id'], f['title'], f['artist']['name'], f['duration'], id_album=f['album']['id'])
+    return faixa
 
 
 def _buscar_album_deezer(id_album):

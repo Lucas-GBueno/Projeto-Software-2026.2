@@ -44,10 +44,13 @@ class Reproduzivel(ABC):
 
 # HERANÇA: FaixaMusical "é uma" Midia reproduzivel
 class FaixaMusical(Midia, Reproduzivel):
-    def __init__(self, id_deezer, titulo, artista, duracao_segundos, avaliacao=None):
+    def __init__(self, id_deezer, titulo, artista, duracao_segundos, avaliacao=None, id_album=None):
         super().__init__(id_deezer, titulo)
         self.artista = artista
         self.duracao_segundos = duracao_segundos
+        # Guarda o id do álbum de origem, para que a faixa "saiba" de onde veio
+        # mesmo depois de já estar na biblioteca (usado na opção 3 do menu).
+        self.id_album = id_album
         # ENCAPSULAMENTO: Atributo privado, protegido de acessos externos.
         self._avaliacao = None
         
