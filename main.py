@@ -1,33 +1,82 @@
-import random
-# Importa do nosso arquivo de modelos lógicos
-from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO
-# Importa do nosso arquivo de comunicação web
-from api import buscar_faixas, buscar_album
+import random #import para criação de IDs
 
-def simular_player(midia):
-    # Checa se o objeto tem a interface Reproduzivel
-    if isinstance(midia, Reproduzivel):
+from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO #import classes e estruturas do sistema
+
+from api import buscar_faixas, buscar_album, buscar_artista #import conexão com API
+
+def simular_player(midia): #simula palyer para objetos reproduzíveis
+    if isinstance(midia, Reproduzivel): #verifica se o objeto é reproduzível
         print(midia.play())
-    else:
+    else: #tratamento de erro caso não seja reproduzível
         print(f" Erro de Sistema: O item '{midia.titulo}' é um metadado descritivo e não pode ser tocado diretamente.")
 
-def avaliar_e_guardar(musica, musicas_avaliadas):
-    """
-    RF1: Pede uma nota de 0 a 5 (validada pelo setter de FaixaMusical) e
-    guarda a música avaliada. Extraído como função à parte porque a opção 1
-    agora tem dois caminhos até aqui: resultado único, ou um escolhido
-    dentre vários — ambos terminam chamando esta mesma função.
+def avaliar_e_guardar(musica, musicas_avaliadas): 
+   
+    """(RF1): Guarda faixas pesquisadas para adicionar a biblioteca
+    Exige nota [0;5] e guarda. Permite selecionar uma faixa musical dentro diversos resultados
     """
     while True:
         try:
-            # ENCAPSULAMENTO NA PRÁTICA: O setter da FaixaMusical fará a validação por baixo dos panos.
+            """(encapsulamento): nota passa por validação interna (número e tipo de variável) antes de ser aceito"""
             nota = float(input(f"⭐ Dê uma nota de 0 a 5 para '{musica.titulo}': ").replace(',', '.'))
             musica.avaliacao = nota
             musicas_avaliadas.append(musica)
             print("🌟 Nota salva com sucesso!")
             break
-        except ValueError as e:
+        except ValueError as e: #tratamento geral de erro
             print(f"{e}")
+
+def remover_de_dentro_da_playlist(playlist):
+    """
+    RF9 (extensão): Remove um componente específico de dentro de uma playlist,
+    descendo recursivamente em sub-playlists até encontrar o item certo —
+    mesmo princípio de navegação da opção 5 (adicionar item na playlist).
+    A remoção aqui é escopada a ESTA playlist (usa Playlist.remover_item,
+    não a versão recursiva): o item continua existindo na biblioteca e em
+    quaisquer outras playlists que também o contenham.
+    """
+    itens = playlist.obter_itens()
+    if not itens:
+        print(f"\n⚠️  A playlist '{playlist.titulo}' está vazia.")
+        return
+
+    print(f"\n📋 Itens dentro de '{playlist.titulo}':")
+    for i, item in enumerate(itens):
+        print(f"  {i + 1}. {item.exibir_info()}")
+
+    try:
+        escolha = int(input("👉 Digite o número do item que deseja remover (0 para voltar): ")) - 1
+    except ValueError:
+        print("❌ Entrada inválida! Digite apenas o número.")
+        return
+
+    if escolha == -1:
+        return
+
+    if not (0 <= escolha < len(itens)):
+        print("❌ Número digitado não existe na lista de itens.")
+        return
+
+    item_selecionado = itens[escolha]
+
+    if isinstance(item_selecionado, Playlist):
+        # O item escolhido também é uma playlist: pergunta de novo, como pedido.
+        print(f"\n📋 '{item_selecionado.titulo}' também é uma playlist. O que deseja fazer?")
+        print("  1. Remover essa sub-playlist inteira (de dentro desta playlist)")
+        print("  2. Entrar nela e remover um item específico")
+        sub_opcao = input("👉 Escolha: ").strip()
+
+        if sub_opcao == '1':
+            playlist.remover_item(item_selecionado)
+            print(f"\n🗑️  Sub-playlist '{item_selecionado.titulo}' removida de '{playlist.titulo}'.")
+        elif sub_opcao == '2':
+            remover_de_dentro_da_playlist(item_selecionado)  # RECURSÃO: desce mais um nível
+        else:
+            print("❌ Opção inválida.")
+    else:
+        # Faixa ou Álbum: remove de uma vez, como pedido.
+        playlist.remover_item(item_selecionado)
+        print(f"\n🗑️  '{item_selecionado.titulo}' removido da playlist '{playlist.titulo}'.")
 
 def menu_principal():
     print("\n" + "═"*52)
@@ -44,12 +93,12 @@ def menu_principal():
     print("│  8. 📱 Testar Player                    (RF4)    │")
     print("│  9. 🗑️  Remover item da biblioteca      (RF9)    │")
     print("│ 10. 🔀 Listar biblioteca ordenada       (RF10)   │")
+    print("│ 11. 🎤 Buscar e guardar Artista da música        │")
     print("│  0. 🚪 Sair                                      │")
     print("└──────────────────────────────────────────────────┘")
 
 if __name__ == "__main__":
-    # INSTANCIAÇÃO: Cria a biblioteca central que vai gerenciar tudo
-    bib = Biblioteca()
+    bib = Biblioteca() #criação da biblioteca (objeto que gerencia todos os outros)
     
     # Listas para guardar as coisas em memória antes de mandar pra biblioteca final
     musicas_avaliadas = []
@@ -68,8 +117,7 @@ if __name__ == "__main__":
                 resultados = buscar_faixas(nome)
 
                 if not resultados:
-                    # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
-                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — tente outra grafia.")
+                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — tente outra grafia.") #(RF7): Resultado vazio tratado como condição normal e recuperável (sistema continua)
 
                 elif len(resultados) == 1:
                     musica_encontrada = resultados[0]
@@ -77,8 +125,7 @@ if __name__ == "__main__":
                     avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
 
                 else:
-                    # RF1 (extensão): mais de um resultado — lista numerado, no mesmo
-                    # padrão do resto do sistema, para o usuário escolher a faixa certa.
+                    """(RF1): Lista de resultados enumerados, para escolha final do usuário"""
                     print(f"\n🔎 {len(resultados)} resultados encontrados para '{nome}':")
                     for i, m in enumerate(resultados):
                         print(f"  {i + 1}. 🎵 {m.titulo} - 🎤 {m.artista} (⏱️ {m.duracao_segundos}s)")
@@ -105,9 +152,12 @@ if __name__ == "__main__":
                 
                 try:
                     escolha = int(input("\n✍️  Digite o número da música: ")) - 1
-                    bib.adicionar_midia(musicas_avaliadas[escolha])
-                except (ValueError, IndexError):
-                    print("❌ Opção inválida.")
+                    if 0 <= escolha < len(musicas_avaliadas):
+                        bib.adicionar_midia(musicas_avaliadas[escolha])
+                    else:
+                        print("❌ Número digitado não existe na lista de músicas.")
+                except ValueError:
+                    print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '3':
             print("\n💿 --- BUSCAR ÁLBUM COMPLETO ---")
@@ -134,7 +184,11 @@ if __name__ == "__main__":
                             print("🌐 Buscando o álbum completo na API da Deezer...")
                             album = buscar_album(faixa_selecionada.id_album)
                             if album:
-                                albuns_buscados.append(album)
+                                # Evita duplicar o mesmo álbum na lista de álbuns buscados
+                                # (ex: buscar o álbum de 2 faixas diferentes do mesmo álbum).
+                                ja_buscado = any(a.id_deezer == album.id_deezer for a in albuns_buscados)
+                                if not ja_buscado:
+                                    albuns_buscados.append(album)
                                 bib.adicionar_midia(album)
                             else:
                                 # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
@@ -166,52 +220,75 @@ if __name__ == "__main__":
                 
             try:
                 escolha_pl = int(input("👉 Qual playlist quer editar? (Número): ")) - 1
-                pl_selecionada = playlists_criadas[escolha_pl]
-                
-                print("\nO que você quer adicionar nela?")
-                print("1. 🎵 Música avaliada")
-                print("2. 💿 Álbum buscado")
-                print("3. 📋 Outra Playlist ")
-                tipo = input("👉 Escolha: ").strip()
+            except ValueError:
+                print("❌ Entrada inválida! Digite apenas o número.")
+                continue
 
-                if tipo == '1':
-                    if not musicas_avaliadas:
-                        print("⚠️ Nenhuma música avaliada ainda.")
-                    else:
-                        for i, m in enumerate(musicas_avaliadas):
-                            print(f"  {i+1}. {m.titulo}")
-                        escolha_m = int(input("👉 Qual música? (Número): ")) - 1
-                        # AGREGAÇÃO E POLIMORFISMO: A playlist aceita a FaixaMusical sem problemas.
-                        pl_selecionada.adicionar_item(musicas_avaliadas[escolha_m])
-                        print("✅ Música adicionada à playlist!")
-                        
-                elif tipo == '2':
-                    if not albuns_buscados:
-                        print("⚠️ Nenhum álbum buscado ainda.")
-                    else:
-                        for i, a in enumerate(albuns_buscados):
-                            print(f"  {i+1}. {a.titulo}")
-                        escolha_a = int(input("👉 Qual álbum? (Número): ")) - 1
-                        # AGREGAÇÃO E POLIMORFISMO: A MESMA função aceita um Álbum, porque ambos são Midia.
-                        pl_selecionada.adicionar_item(albuns_buscados[escolha_a])
-                        print("✅ Álbum adicionado à playlist!")
+            if not (0 <= escolha_pl < len(playlists_criadas)):
+                print("❌ Número digitado não existe na lista de playlists.")
+                continue
 
-                elif tipo == '3':
-                    # RF6: Adicionando uma Playlist dentro de outra Playlist
-                    outras = [p for p in playlists_criadas if p != pl_selecionada]
-                    if not outras:
-                        print("⚠️ Não há outras playlists disponíveis para incluir.")
-                    else:
-                        for i, p in enumerate(outras):
-                            print(f"  {i+1}. {p.titulo}")
-                        escolha_p = int(input("👉 Qual playlist quer incluir dentro desta? (Número): ")) - 1
-                        pl_selecionada.adicionar_item(outras[escolha_p])
-                        print("✅ Sub-playlist adicionada com sucesso! Duração e itens vinculados recursivamente.")
+            pl_selecionada = playlists_criadas[escolha_pl]
+
+            print("\nO que você quer adicionar nela?")
+            print("1. 🎵 Música avaliada")
+            print("2. 💿 Álbum buscado")
+            print("3. 📋 Outra Playlist ")
+            tipo = input("👉 Escolha: ").strip()
+
+            if tipo == '1':
+                if not musicas_avaliadas:
+                    print("⚠️ Nenhuma música avaliada ainda.")
                 else:
-                    print("❌ Inválido.")
-                    
-            except (ValueError, IndexError):
-                print("❌ Opção inválida.")
+                    for i, m in enumerate(musicas_avaliadas):
+                        print(f"  {i+1}. {m.titulo}")
+                    try:
+                        escolha_m = int(input("👉 Qual música? (Número): ")) - 1
+                        if 0 <= escolha_m < len(musicas_avaliadas):
+                            # AGREGAÇÃO E POLIMORFISMO: A playlist aceita a FaixaMusical sem problemas.
+                            pl_selecionada.adicionar_item(musicas_avaliadas[escolha_m])
+                            print("✅ Música adicionada à playlist!")
+                        else:
+                            print("❌ Número digitado não existe na lista de músicas.")
+                    except ValueError:
+                        print("❌ Entrada inválida! Digite apenas o número.")
+
+            elif tipo == '2':
+                if not albuns_buscados:
+                    print("⚠️ Nenhum álbum buscado ainda.")
+                else:
+                    for i, a in enumerate(albuns_buscados):
+                        print(f"  {i+1}. {a.titulo}")
+                    try:
+                        escolha_a = int(input("👉 Qual álbum? (Número): ")) - 1
+                        if 0 <= escolha_a < len(albuns_buscados):
+                            # AGREGAÇÃO E POLIMORFISMO: A MESMA função aceita um Álbum, porque ambos são Midia.
+                            pl_selecionada.adicionar_item(albuns_buscados[escolha_a])
+                            print("✅ Álbum adicionado à playlist!")
+                        else:
+                            print("❌ Número digitado não existe na lista de álbuns.")
+                    except ValueError:
+                        print("❌ Entrada inválida! Digite apenas o número.")
+
+            elif tipo == '3':
+                # RF6: Adicionando uma Playlist dentro de outra Playlist
+                outras = [p for p in playlists_criadas if p != pl_selecionada]
+                if not outras:
+                    print("⚠️ Não há outras playlists disponíveis para incluir.")
+                else:
+                    for i, p in enumerate(outras):
+                        print(f"  {i+1}. {p.titulo}")
+                    try:
+                        escolha_p = int(input("👉 Qual playlist quer incluir dentro desta? (Número): ")) - 1
+                        if 0 <= escolha_p < len(outras):
+                            pl_selecionada.adicionar_item(outras[escolha_p])
+                            print("✅ Sub-playlist adicionada com sucesso! Duração e itens vinculados recursivamente.")
+                        else:
+                            print("❌ Número digitado não existe na lista de playlists.")
+                    except ValueError:
+                        print("❌ Entrada inválida! Digite apenas o número.")
+            else:
+                print("❌ Inválido.")
 
         elif opcao == '6':
             print("\n📥 --- ADICIONAR PLAYLIST À BIBLIOTECA ---")
@@ -222,9 +299,12 @@ if __name__ == "__main__":
                     print(f"  {i+1}. {pl.titulo}")
                 try:
                     escolha_pl = int(input("👉 Qual playlist vai pra biblioteca? (Número): ")) - 1
-                    bib.adicionar_midia(playlists_criadas[escolha_pl])
-                except (ValueError, IndexError):
-                    print("❌ Inválido.")
+                    if 0 <= escolha_pl < len(playlists_criadas):
+                        bib.adicionar_midia(playlists_criadas[escolha_pl])
+                    else:
+                        print("❌ Número digitado não existe na lista de playlists.")
+                except ValueError:
+                    print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '7':
             # POLIMORFISMO NA PRÁTICA: O método calcular_duracao resolve a vida de qualquer mídia que estiver na lista.
@@ -269,9 +349,25 @@ if __name__ == "__main__":
 
                 if 0 <= escolha < len(itens_biblioteca):
                     item_selecionado = itens_biblioteca[escolha]
-                    # RF9: remoção consistente — a Biblioteca trata sozinha as
-                    # referências existentes em playlists (inclusive aninhadas).
-                    bib.remover_midia(item_selecionado.id_deezer, playlists_criadas)
+
+                    if isinstance(item_selecionado, Playlist):
+                        print(f"\n📋 Você selecionou a playlist '{item_selecionado.titulo}'. O que deseja fazer?")
+                        print("  1. Remover a playlist inteira da biblioteca")
+                        print("  2. Remover um item específico de dentro dela")
+                        sub_opcao = input("👉 Escolha: ").strip()
+
+                        if sub_opcao == '1':
+                            # RF9: remoção consistente — a Biblioteca trata sozinha as
+                            # referências existentes em playlists (inclusive aninhadas).
+                            bib.remover_midia(item_selecionado.id_deezer, playlists_criadas)
+                        elif sub_opcao == '2':
+                            # RF9 (extensão): remoção aninhada de um componente específico.
+                            remover_de_dentro_da_playlist(item_selecionado)
+                        else:
+                            print("❌ Opção inválida.")
+                    else:
+                        # Faixa ou Álbum selecionados diretamente da biblioteca: remove de uma vez.
+                        bib.remover_midia(item_selecionado.id_deezer, playlists_criadas)
                 else:
                     print("❌ Número digitado não existe na lista de resultados.")
             except ValueError:
@@ -300,6 +396,42 @@ if __name__ == "__main__":
                     print("❌ Número digitado não existe na lista de critérios.")
             except ValueError:
                 print("❌ Entrada inválida! Digite apenas o número.")
+
+        elif opcao == '11':
+            print("\n🎤 --- BUSCAR E GUARDAR ARTISTA DA MÚSICA ---")
+            # Mesmo padrão da opção 3: lista as faixas da BIBLIOTECA por índice,
+            # e usa o id_artista guardado na faixa para buscar o artista completo.
+            faixas_na_biblioteca = [m for m in bib._colecao.values() if isinstance(m, FaixaMusical)]
+
+            if not faixas_na_biblioteca:
+                print("⚠️  Nenhuma música na biblioteca ainda. Adicione uma primeiro (Opção 2).")
+            else:
+                print("🎵 Músicas na biblioteca:")
+                for i, m in enumerate(faixas_na_biblioteca):
+                    print(f"  {i + 1}. {m.titulo} - {m.artista}")
+
+                try:
+                    escolha = int(input("\n👉 Digite o número da música cujo artista você quer buscar: ")) - 1
+
+                    if 0 <= escolha < len(faixas_na_biblioteca):
+                        faixa_selecionada = faixas_na_biblioteca[escolha]
+
+                        if faixa_selecionada.id_artista is None:
+                            print("⚠️  Essa música não tem um artista de origem associado.")
+                        else:
+                            print("🌐 Buscando os dados do artista na API da Deezer...")
+                            artista = buscar_artista(faixa_selecionada.id_artista)
+                            if artista:
+                                # Um Artista entra na biblioteca (RF2 vale igual: sem duplicatas),
+                                # mas NUNCA pode ser adicionado a uma playlist (ver Playlist.adicionar_item).
+                                bib.adicionar_midia(artista)
+                            else:
+                                # RF7: resultado vazio é uma condição normal e recuperável — a aplicação continua.
+                                print("🔍 Nenhum resultado encontrado para o artista — tente buscar a música novamente.")
+                    else:
+                        print("❌ Número digitado não existe na lista de músicas.")
+                except ValueError:
+                    print("❌ Entrada inválida! Digite apenas o número.")
 
         elif opcao == '0':
             print("\n👋 Saindo do sistema... Até logo!")
