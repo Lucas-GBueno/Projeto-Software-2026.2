@@ -227,8 +227,9 @@ class Artista(Midia):
         """COMPOSIÇÃO/POLIMORFISMO: além de si mesmo, lista cada álbum da discografia (nivel+1),
         e cada álbum, por sua vez, lista suas próprias faixas — a recursão do RF7 continua valendo."""
         linhas = [super().exibir_detalhado(nivel)]
+        marcador = "  " * (nivel + 1) + "↳"
         for album in self._discografia:
-            linhas.append(album.exibir_detalhado(nivel + 1))
+            linhas.append(f"{marcador} {album.titulo} (⏱️ {album.calcular_duracao()}s)")
         return "\n".join(linhas)
 
     # PROPOSITALMENTE SEM play(): Artista não implementa Reproduzivel.
