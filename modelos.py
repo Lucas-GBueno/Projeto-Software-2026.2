@@ -221,15 +221,14 @@ class Artista(Midia):
         generos_str = ", ".join(self._generos) if self._generos else "gênero não informado"
         sucesso_str = self.musica_maior_sucesso or "não informado"
         return (f"🎤 Artista: {self.titulo} | 🏆 Maior sucesso: {sucesso_str} "
-                f"| 🎼 Gêneros: {generos_str} | 💿 {len(self._discografia)} álbum(ns) na discografia")
+                f"| 🎼 Gêneros: {generos_str} | 💿 {len(self._discografia)} álbum(ns) "
+                f"| ⏱️ Duração total da discografia: {self.calcular_duracao()}s")
 
-    def exibir_detalhado(self, nivel=0):
-        """COMPOSIÇÃO/POLIMORFISMO: além de si mesmo, lista cada álbum da discografia (nivel+1),
-        e cada álbum, por sua vez, lista suas próprias faixas — a recursão do RF7 continua valendo."""
-        linhas = [super().exibir_detalhado(nivel)]
-        for album in self._discografia:
-            linhas.append(album.exibir_detalhado(nivel + 1))
-        return "\n".join(linhas)
+    # exibir_detalhado() NÃO é sobrescrito aqui de propósito: o Artista usa o
+    # comportamento padrão "folha" herdado de Midia (mostra só a si mesmo, com
+    # a duração total já somada em exibir_info()). Diferente de Album/Playlist,
+    # a listagem da biblioteca (opção 7) não expande a discografia do artista
+    # em álbuns e faixas — só o resumo é exibido.
 
     # PROPOSITALMENTE SEM play(): Artista não implementa Reproduzivel.
     # Tentar chamar simular_player() nele cai no ramo "não pode ser tocado".
