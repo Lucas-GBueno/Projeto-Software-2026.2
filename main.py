@@ -8,7 +8,7 @@ def simular_player(midia): #simula palyer para objetos reproduzíveis
     if isinstance(midia, Reproduzivel): #verifica se o objeto é reproduzível
         print(midia.play())
     else: #tratamento de erro caso não seja reproduzível
-        print(f" Erro de Sistema: O item '{midia.titulo}' é um metadado descritivo e não pode ser tocado diretamente.")
+        print(f" Erro de Sistema: O item '{midia.titulo}' não é uma mídia reproduzível e não pode ser tocado diretamente.")
 
 def avaliar_e_guardar(musica, musicas_avaliadas): 
    
@@ -117,7 +117,7 @@ if __name__ == "__main__":
                 resultados = buscar_faixas(nome)
 
                 if not resultados:
-                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — tente outra grafia.") #(RF7): Resultado vazio tratado como condição normal e recuperável (sistema continua)
+                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — Verifique grafia e conexão à internet e tente novamente.") #(RF7): Resultado vazio tratado como condição normal e recuperável (sistema continua)
 
                 elif len(resultados) == 1:
                     musica_encontrada = resultados[0]
