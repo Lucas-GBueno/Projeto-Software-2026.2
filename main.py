@@ -2,7 +2,7 @@ import random #import para criação de IDs
 
 from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO, registrar_criterio_ordenacao, remover_criterio_ordenacao #import classes e estruturas do sistema
 
-from api import buscar_faixas, buscar_album, buscar_artista #import conexão com API
+from api import buscar_faixas, buscar_album, buscar_artista
 
 def simular_player(midia): #simula palyer para objetos reproduzíveis
     if isinstance(midia, Reproduzivel): #verifica se o objeto é reproduzível
@@ -236,31 +236,34 @@ if __name__ == "__main__":
         opcao = input("👉 Escolha uma opção: ").strip()
         
         if opcao == '1':
-            print("\n🔍 --- BUSCA NA DEEZER ---")
+            print("\n🔍 --- BUSCA DE MÚSICA ---")
             nome = input("Digite o nome da música: ").strip()
             
             if nome:
+                # Agora retorna uma lista com (FaixaMusical, id_album)
                 resultados = buscar_faixas(nome)
 
                 if not resultados:
-                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — Verifique grafia e conexão à internet e tente novamente.") #(RF7): Resultado vazio tratado como condição normal e recuperável (sistema continua)
+                    print(f"🔍 Nenhum resultado encontrado para '{nome}' — Verifique grafia e conexão à internet e tente novamente.")
 
                 elif len(resultados) == 1:
-                    musica_encontrada = resultados[0]
+                    musica_encontrada, id_album = resultados[0]
+                    ultimo_id_album = id_album
                     print(f"\n✨ Encontrada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista} (⏱️ {musica_encontrada.duracao_segundos}s)")
                     avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
 
                 else:
-                    """(RF1): Lista de resultados enumerados, para escolha final do usuário"""
                     print(f"\n🔎 {len(resultados)} resultados encontrados para '{nome}':")
-                    for i, m in enumerate(resultados):
+                    # Desempacota o 'm' (música) e 'id_alb' (ID do álbum)
+                    for i, (m, id_alb) in enumerate(resultados):
                         print(f"  {i + 1}. 🎵 {m.titulo} - 🎤 {m.artista} (⏱️ {m.duracao_segundos}s)")
 
                     try:
                         escolha = int(input("\n👉 Digite o número da música desejada: ")) - 1
 
                         if 0 <= escolha < len(resultados):
-                            musica_encontrada = resultados[escolha]
+                            musica_encontrada, id_album = resultados[escolha]
+                            ultimo_id_album = id_album # Guarda o ID do álbum escolhido para a opção 3
                             print(f"\n✨ Selecionada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista}")
                             avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
                         else:
