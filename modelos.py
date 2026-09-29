@@ -78,6 +78,11 @@ class FaixaMusical(Midia, Reproduzivel):
     # ENCAPSULAMENTO: Setter para validar o dado antes de alterar o estado interno.
     @avaliacao.setter
     def avaliacao(self, valor):
+        # RF1: a nota precisa ser um número INTEIRO. Floats (mesmo "4.0") e
+        # booleanos são recusados; a regra fica no modelo, então vale para
+        # qualquer código que tente atribuir nota, não só para o menu.
+        if isinstance(valor, bool) or not isinstance(valor, int):
+            raise ValueError(f"❌ Erro: A nota {valor} é inválida. Use apenas números inteiros de 0 a 5 (sem decimais).")
         if not (0 <= valor <= 5):
             raise ValueError(f"❌ Erro: A nota {valor} é impossível. Avalie entre 0 e 5.")
         self._avaliacao = valor

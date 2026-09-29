@@ -13,18 +13,28 @@ def simular_player(midia): #simula palyer para objetos reproduzíveis
 def avaliar_e_guardar(musica, musicas_avaliadas): 
    
     """(RF1): Guarda faixas pesquisadas para adicionar a biblioteca
-    Exige nota [0;5] e guarda. Permite selecionar uma faixa musical dentro diversos resultados
+    Exige nota INTEIRA em [0;5] (decimais não são aceitos) e guarda.
+    Permite selecionar uma faixa musical dentro diversos resultados
     """
     while True:
+        entrada = input(f"⭐ Dê uma nota inteira de 0 a 5 para '{musica.titulo}': ").strip()
+
         try:
-            """(encapsulamento): nota passa por validação interna (número e tipo de variável) antes de ser aceito"""
-            nota = float(input(f"⭐ Dê uma nota de 0 a 5 para '{musica.titulo}': ").replace(',', '.'))
+            nota = int(entrada) # apenas inteiros: "4,5", "4.5" e texto caem no except abaixo
+        except ValueError:
+            print("❌ Nota inválida! Digite um número inteiro de 0 a 5 (decimais como 4,5 não são aceitos).")
+            continue
+
+        try:
+            """(encapsulamento): nota passa por validação interna (tipo inteiro e intervalo) antes de ser aceita"""
             musica.avaliacao = nota
-            musicas_avaliadas.append(musica)
-            print("🌟 Nota salva com sucesso!")
-            break
-        except ValueError as e: #tratamento geral de erro
+        except ValueError as e: #nota inteira, mas fora do intervalo 0-5
             print(f"{e}")
+            continue
+
+        musicas_avaliadas.append(musica)
+        print("🌟 Nota salva com sucesso!")
+        break
 
 def remover_de_dentro_da_playlist(playlist):
     """
