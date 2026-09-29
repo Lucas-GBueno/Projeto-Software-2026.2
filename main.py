@@ -1,6 +1,6 @@
 import random #import para criação de IDs
 
-from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO #import classes e estruturas do sistema
+from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO, registrar_criterio_ordenacao, remover_criterio_ordenacao #import classes e estruturas do sistema
 
 from api import buscar_faixas, buscar_album, buscar_artista #import conexão com API
 
@@ -88,6 +88,121 @@ def remover_de_dentro_da_playlist(playlist):
         playlist.remover_item(item_selecionado)
         print(f"\n🗑️  '{item_selecionado.titulo}' removido da playlist '{playlist.titulo}'.")
 
+def _converter_valor_padrao(texto):
+    """
+    Tenta converter o texto digitado pro tipo mais compatível (int, depois
+    float); se não for número, mantém como string. Um valor padrão do TIPO
+    CERTO evita que sorted() quebre comparando None com número/texto.
+    Texto vazio vira None (o próprio try/except da ordenação cobre esse caso).
+    """
+    if texto == "":
+        return None
+    try:
+        return int(texto)
+    except ValueError:
+        pass
+    try:
+        return float(texto.replace(",", "."))
+    except ValueError:
+        return texto
+
+
+def _adicionar_criterio_interativo():
+    """
+    RF10 (extensão): monta um novo critério de ordenação a partir de dados
+    estruturados fornecidos pelo usuário (nome, atributo/método, se precisa
+    ser chamado, e um valor padrão) — nunca a partir de código digitado
+    livremente, o que seria um risco de segurança (equivalente a um eval()).
+    """
+    print("\n➕ --- NOVO CRITÉRIO DE ORDENAÇÃO ---")
+    nome = input("👉 Nome do novo critério (ex: 'artista'): ").strip().lower()
+    if not nome:
+        print("❌ O nome não pode ser vazio.")
+        return
+    if nome in CRITERIOS_ORDENACAO:
+        print(f"🚫 Já existe um critério chamado '{nome}'. Escolha outro nome.")
+        return
+
+    atributo = input("👉 Nome do atributo/método já existente na mídia (ex: 'titulo', 'artista', 'calcular_duracao'): ").strip()
+    if not atributo:
+        print("❌ O atributo não pode ser vazio.")
+        return
+
+    eh_metodo = input("👉 Isso é um MÉTODO que precisa ser chamado, como calcular_duracao? (s/N): ").strip().lower() == 's'
+
+    valor_padrao = _converter_valor_padrao(
+        input("👉 Valor padrão para itens que não tiverem esse dado (ex: 0 — deixe em branco se não fizer sentido): ").strip()
+    )
+
+    def chave(midia, _attr=atributo, _metodo=eh_metodo, _padrao=valor_padrao):
+        valor = getattr(midia, _attr, _padrao)
+        if _metodo:
+            valor = valor() if callable(valor) else _padrao
+        return _padrao if valor is None else valor
+
+    if registrar_criterio_ordenacao(nome, chave):
+        print(f"✅ Critério '{nome}' adicionado com sucesso!")
+    else:
+        print(f"🚫 Não foi possível adicionar '{nome}' (nome já existe).")
+
+
+def _remover_criterio_interativo():
+    """RF10 (extensão): lista os critérios atuais numerados e remove só o escolhido."""
+    criterios_atuais = list(CRITERIOS_ORDENACAO.keys())
+    if not criterios_atuais:
+        print("\n⚠️  Não há critérios para remover.")
+        return
+
+    print("\n🗑️  Qual critério deseja remover?")
+    for i, nome_criterio in enumerate(criterios_atuais):
+        print(f"  {i + 1}. {nome_criterio.capitalize()}")
+
+    try:
+        escolha = int(input("👉 Digite o número: ")) - 1
+    except ValueError:
+        print("❌ Entrada inválida! Digite apenas o número.")
+        return
+
+    if 0 <= escolha < len(criterios_atuais):
+        nome = criterios_atuais[escolha]
+        remover_criterio_ordenacao(nome)
+        print(f"✅ Critério '{nome}' removido.")
+    else:
+        print("❌ Número digitado não existe na lista de critérios.")
+
+
+def editar_criterios_ordenacao():
+    """
+    Tela de edição dos critérios (RF10 extensão): mostra os critérios atuais
+    e a opção de adicionar/remover; depois de cada ação, volta para esta
+    mesma tela (mostrando a lista já atualizada) — até o usuário escolher
+    voltar ao menu principal.
+    """
+    while True:
+        print("\n📐 --- CRITÉRIOS DE ORDENAÇÃO ATUAIS ---")
+        criterios_atuais = list(CRITERIOS_ORDENACAO.keys())
+        if criterios_atuais:
+            for i, nome_criterio in enumerate(criterios_atuais):
+                print(f"  {i + 1}. {nome_criterio.capitalize()}")
+        else:
+            print("  (nenhum critério registrado no momento)")
+
+        print("\nO que deseja fazer?")
+        print("  1. ➕ Adicionar critério")
+        print("  2. ➖ Remover critério")
+        print("  0. 🚪 Voltar ao menu principal")
+        escolha = input("👉 Escolha: ").strip()
+
+        if escolha == '1':
+            _adicionar_criterio_interativo()
+        elif escolha == '2':
+            _remover_criterio_interativo()
+        elif escolha == '0':
+            return
+        else:
+            print("❌ Opção inválida.")
+
+
 def menu_principal():
     print("\n" + "═"*52)
     print("           🎧 CATÁLOGO MUSICAL & DEEZER 🎧")
@@ -104,6 +219,7 @@ def menu_principal():
     print("│  9. 🗑️  Remover item da biblioteca      (RF9)    │")
     print("│ 10. 🔀 Listar biblioteca ordenada       (RF10)   │")
     print("│ 11. 🎤 Buscar e guardar Artista da música        │")
+    print("│ 12. 📐 Editar critérios de ordenação             │")
     print("│  0. 🚪 Sair                                      │")
     print("└──────────────────────────────────────────────────┘")
 
@@ -442,6 +558,9 @@ if __name__ == "__main__":
                         print("❌ Número digitado não existe na lista de músicas.")
                 except ValueError:
                     print("❌ Entrada inválida! Digite apenas o número.")
+
+        elif opcao == '12':
+            editar_criterios_ordenacao()
 
         elif opcao == '0':
             print("\n👋 Saindo do sistema... Até logo!")
