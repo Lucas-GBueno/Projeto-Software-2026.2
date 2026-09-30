@@ -15,6 +15,7 @@ def _buscar_faixas_deezer(nome_musica): # RF8: Fonte oculta (prefixo _). O resta
     for f in dados.get('data', [])[:10]: 
         faixa = FaixaMusical(f['id'], f['title'], f['artist']['name'], f['duration'])
         faixa.id_artista = f['artist']['id'] # <-- Injeta o ID do artista aqui
+        faixa.id_album = f['album']['id']  
         resultados.append((faixa, f['album']['id']))
     return resultados
 
@@ -50,6 +51,7 @@ def _buscar_faixas_itunes(nome_musica): # RF8: Nova fonte de dados também ocult
         duracao = f.get('trackTimeMillis', 0) // 1000
         faixa = FaixaMusical(f['trackId'], f['trackName'], f['artistName'], duracao)
         faixa.id_artista = f.get('artistId') # <-- Injeta o ID do artista aqui
+        faixa.id_album = f.get('collectionId') 
         resultados.append((faixa, f.get('collectionId')))
     return resultados
 

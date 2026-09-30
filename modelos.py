@@ -366,15 +366,3 @@ class Biblioteca:
         print(f"║ ⏱️  Duração Total da Coleção: {duracao_total}s ({minutos}m {segundos}s)".ljust(67) + "║")
         print("╚══════════════════════════════════════════════════════════════════╝")
 
-# HERANÇA: Artista "é uma" Midia (descritiva)
-class Artista(Midia):
-    def __init__(self, id_deezer, nome):
-        # O nome do artista entra no lugar do "titulo" exigido pela classe Midia
-        super().__init__(id_deezer, nome)
-
-    # POLIMORFISMO: Artista não tem tempo de reprodução
-    def calcular_duracao(self):
-        return 0
-
-    def exibir_info(self):
-        return f"🎤 Artista: {self.titulo}"
