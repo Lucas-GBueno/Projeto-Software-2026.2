@@ -84,6 +84,10 @@ def _buscar_album_itunes(id_album): # RF8: Busca de álbum específica do iTunes
 
 # Mude para "deezer" ou "itunes". O main.py não faz ideia de qual está sendo usado.
 PROVEDOR_ATUAL = "itunes" 
+NOMES_PROVEDORES = {"deezer": "Deezer", "itunes": "iTunes"}
+
+def nome_provedor_atual():
+    return NOMES_PROVEDORES.get(PROVEDOR_ATUAL, "fonte de dados")
 
 def buscar_faixas(nome_musica): # RF8: Fachada pública que esconde a real fonte dos dados.
     if PROVEDOR_ATUAL == "deezer":

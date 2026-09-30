@@ -2,7 +2,7 @@ import random #import para criação de IDs
 
 from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO, registrar_criterio_ordenacao, remover_criterio_ordenacao #import classes e estruturas do sistema
 
-from api import buscar_faixas, buscar_album, buscar_artista
+from api import buscar_faixas, buscar_album, buscar_artista, nome_provedor_atual
 
 def simular_player(midia): #simula palyer para objetos reproduzíveis
     if isinstance(midia, Reproduzivel): #verifica se o objeto é reproduzível
@@ -205,7 +205,7 @@ def editar_criterios_ordenacao():
 
 def menu_principal():
     print("\n" + "═"*52)
-    print("           🎧 CATÁLOGO MUSICAL & DEEZER 🎧")
+    print(f"           🎧 CATÁLOGO MUSICAL & {nome_provedor_atual().upper()} 🎧")
     print("═"*52)
     print("┌──────────────────────────────────────────────────┐")
     print("│  1. 🔍 Buscar música e avaliar          (RF1)   │")
@@ -310,7 +310,7 @@ if __name__ == "__main__":
                         if faixa_selecionada.id_album is None:
                             print("⚠️  Essa música não tem um álbum de origem associado.")
                         else:
-                            print("🌐 Buscando o álbum completo na API da Deezer...")
+                            print(f"🌐 Buscando o álbum completo na API {nome_provedor_atual()}...")
                             album = buscar_album(faixa_selecionada.id_album)
                             if album:
                                 # Evita duplicar o mesmo álbum na lista de álbuns buscados
@@ -548,7 +548,7 @@ if __name__ == "__main__":
                         if faixa_selecionada.id_artista is None:
                             print("⚠️  Essa música não tem um artista de origem associado.")
                         else:
-                            print("🌐 Buscando os dados do artista na API da Deezer...")
+                            print(f"🌐 Buscando os dados do artista na API {nome_provedor_atual()}...")
                             artista = buscar_artista(faixa_selecionada.id_artista)
                             if artista:
                                 # Um Artista entra na biblioteca (RF2 vale igual: sem duplicatas),
