@@ -2,7 +2,7 @@ import random #import para criação de IDs
 
 from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO, registrar_criterio_ordenacao, remover_criterio_ordenacao #import classes e estruturas do sistema
 
-from api import buscar_faixas, buscar_album, buscar_artista
+from api import buscar_faixas, buscar_album, buscar_artista, nome_provedor_atual
 
 def simular_player(midia): #simula palyer para objetos reproduzíveis
     if isinstance(midia, Reproduzivel): #verifica se o objeto é reproduzível
@@ -205,7 +205,7 @@ def editar_criterios_ordenacao():
 
 def menu_principal():
     print("\n" + "═"*52)
-    print("           🎧 CATÁLOGO MUSICAL & DEEZER 🎧")
+    print(f"           🎧 CATÁLOGO MUSICAL & {nome_provedor_atual().upper()} 🎧")
     print("═"*52)
     print("┌──────────────────────────────────────────────────┐")
     print("│  1. 🔍 Buscar música e avaliar          (RF1)   │")
@@ -248,7 +248,6 @@ if __name__ == "__main__":
 
                 elif len(resultados) == 1:
                     musica_encontrada, id_album = resultados[0]
-                    ultimo_id_album = id_album
                     print(f"\n✨ Encontrada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista} (⏱️ {musica_encontrada.duracao_segundos}s)")
                     avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
 
@@ -263,7 +262,6 @@ if __name__ == "__main__":
 
                         if 0 <= escolha < len(resultados):
                             musica_encontrada, id_album = resultados[escolha]
-                            ultimo_id_album = id_album # Guarda o ID do álbum escolhido para a opção 3
                             print(f"\n✨ Selecionada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista}")
                             avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
                         else:
@@ -292,7 +290,7 @@ if __name__ == "__main__":
             print("\n💿 --- BUSCAR ÁLBUM COMPLETO ---")
             # RF3 (correção): lista as faixas que já estão na BIBLIOTECA (não mais
             # "a última pesquisada"), seguindo o mesmo padrão de índice das outras opções.
-            faixas_na_biblioteca = [m for m in bib._colecao.values() if isinstance(m, FaixaMusical)]
+            faixas_na_biblioteca = [m for m in bib.obter_itens() if isinstance(m, FaixaMusical)]
 
             if not faixas_na_biblioteca:
                 print("⚠️  Nenhuma música na biblioteca ainda. Adicione uma primeiro (Opção 2).")
@@ -310,7 +308,7 @@ if __name__ == "__main__":
                         if faixa_selecionada.id_album is None:
                             print("⚠️  Essa música não tem um álbum de origem associado.")
                         else:
-                            print("🌐 Buscando o álbum completo na API da Deezer...")
+                            print(f"🌐 Buscando o álbum completo na API {nome_provedor_atual()}...")
                             album = buscar_album(faixa_selecionada.id_album)
                             if album:
                                 # Evita duplicar o mesmo álbum na lista de álbuns buscados
@@ -441,11 +439,11 @@ if __name__ == "__main__":
 
         elif opcao == '8':
             print("\n🎧 --- SIMULADOR DE PLAYER ---")
-            if not bib._colecao:
+            if bib.esta_vazia():
                 print("⚠️  A biblioteca está vazia. Adicione algo antes de tentar reproduzir (Opções 2 ou 6).")
                 continue
 
-            itens_biblioteca = list(bib._colecao.values())
+            itens_biblioteca = bib.obter_itens()
             print("📚 Itens na biblioteca:")
             for i, item in enumerate(itens_biblioteca):
                 print(f"  {i + 1}. {item.exibir_info()}")
@@ -464,11 +462,11 @@ if __name__ == "__main__":
 
         elif opcao == '9':
             print("\n🗑️  --- REMOVER ITEM DA BIBLIOTECA (RF9) ---")
-            if not bib._colecao:
+            if bib.esta_vazia():
                 print("⚠️  A biblioteca está vazia.")
                 continue
 
-            itens_biblioteca = list(bib._colecao.values())
+            itens_biblioteca = bib.obter_itens()
             print("📚 Itens na biblioteca:")
             for i, item in enumerate(itens_biblioteca):
                 print(f"  {i + 1}. {item.exibir_info()}")
@@ -505,7 +503,7 @@ if __name__ == "__main__":
 
         elif opcao == '10':
             print("\n🔀 --- LISTAR BIBLIOTECA ORDENADA (RF10) ---")
-            if not bib._colecao:
+            if bib.esta_vazia():
                 print("⚠️  A biblioteca está vazia.")
                 continue
 
@@ -530,8 +528,7 @@ if __name__ == "__main__":
             print("\n🎤 --- BUSCAR E GUARDAR ARTISTA DA MÚSICA ---")
             # Mesmo padrão da opção 3: lista as faixas da BIBLIOTECA por índice,
             # e usa o id_artista guardado na faixa para buscar o artista completo.
-            faixas_na_biblioteca = [m for m in bib._colecao.values() if isinstance(m, FaixaMusical)]
-
+            faixas_na_biblioteca = [m for m in bib.obter_itens() if isinstance(m, FaixaMusical)]
             if not faixas_na_biblioteca:
                 print("⚠️  Nenhuma música na biblioteca ainda. Adicione uma primeiro (Opção 2).")
             else:
@@ -548,7 +545,7 @@ if __name__ == "__main__":
                         if faixa_selecionada.id_artista is None:
                             print("⚠️  Essa música não tem um artista de origem associado.")
                         else:
-                            print("🌐 Buscando os dados do artista na API da Deezer...")
+                            print(f"🌐 Buscando os dados do artista na API {nome_provedor_atual()}...")
                             artista = buscar_artista(faixa_selecionada.id_artista)
                             if artista:
                                 # Um Artista entra na biblioteca (RF2 vale igual: sem duplicatas),
