@@ -28,7 +28,7 @@ O projeto foi refatorado e modularizado para aplicar os conceitos de Programa√ß√
 classDiagram
     class Midia {
         <<abstract>>
-        +id_deezer
+        +id_externo
         +titulo
         +calcular_duracao()*
         +exibir_info()*
