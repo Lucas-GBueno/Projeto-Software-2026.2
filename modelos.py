@@ -265,6 +265,19 @@ class Biblioteca:
         # ENCAPSULAMENTO: Dicionário protegido para garantir que ninguém adicione duplicatas burlando a regra.
         self._colecao = {}
 
+    def esta_vazia(self):
+        """RF2: permite checar se há itens na biblioteca sem expor _colecao diretamente."""
+        return not self._colecao
+
+    def obter_itens(self):
+        """
+        RF2: retorna uma CÓPIA da lista de itens, para navegação externa segura
+        (mesmo princípio de Playlist.obter_itens()). Uma cópia impede que
+        alguém mute o estado real da biblioteca por fora dos métodos
+        controlados (ex: bib.obter_itens().clear() nunca afeta a coleção real).
+        """
+        return list(self._colecao.values())
+
     def adicionar_midia(self, midia):
         if midia.id_deezer in self._colecao:
             print(f"\n🚫 [BLOQUEADO] '{midia.titulo}' já está na biblioteca! (Duplicata recusada)")

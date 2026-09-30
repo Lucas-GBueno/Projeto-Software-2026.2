@@ -292,7 +292,7 @@ if __name__ == "__main__":
             print("\n💿 --- BUSCAR ÁLBUM COMPLETO ---")
             # RF3 (correção): lista as faixas que já estão na BIBLIOTECA (não mais
             # "a última pesquisada"), seguindo o mesmo padrão de índice das outras opções.
-            faixas_na_biblioteca = [m for m in bib._colecao.values() if isinstance(m, FaixaMusical)]
+            faixas_na_biblioteca = [m for m in bib.obter_itens() if isinstance(m, FaixaMusical)]
 
             if not faixas_na_biblioteca:
                 print("⚠️  Nenhuma música na biblioteca ainda. Adicione uma primeiro (Opção 2).")
@@ -441,11 +441,11 @@ if __name__ == "__main__":
 
         elif opcao == '8':
             print("\n🎧 --- SIMULADOR DE PLAYER ---")
-            if not bib._colecao:
+            if bib.esta_vazia():
                 print("⚠️  A biblioteca está vazia. Adicione algo antes de tentar reproduzir (Opções 2 ou 6).")
                 continue
 
-            itens_biblioteca = list(bib._colecao.values())
+            itens_biblioteca = bib.obter_itens()
             print("📚 Itens na biblioteca:")
             for i, item in enumerate(itens_biblioteca):
                 print(f"  {i + 1}. {item.exibir_info()}")
@@ -464,11 +464,11 @@ if __name__ == "__main__":
 
         elif opcao == '9':
             print("\n🗑️  --- REMOVER ITEM DA BIBLIOTECA (RF9) ---")
-            if not bib._colecao:
+            if bib.esta_vazia():
                 print("⚠️  A biblioteca está vazia.")
                 continue
 
-            itens_biblioteca = list(bib._colecao.values())
+            itens_biblioteca = bib.obter_itens()
             print("📚 Itens na biblioteca:")
             for i, item in enumerate(itens_biblioteca):
                 print(f"  {i + 1}. {item.exibir_info()}")
@@ -505,7 +505,7 @@ if __name__ == "__main__":
 
         elif opcao == '10':
             print("\n🔀 --- LISTAR BIBLIOTECA ORDENADA (RF10) ---")
-            if not bib._colecao:
+            if bib.esta_vazia():
                 print("⚠️  A biblioteca está vazia.")
                 continue
 
@@ -530,8 +530,7 @@ if __name__ == "__main__":
             print("\n🎤 --- BUSCAR E GUARDAR ARTISTA DA MÚSICA ---")
             # Mesmo padrão da opção 3: lista as faixas da BIBLIOTECA por índice,
             # e usa o id_artista guardado na faixa para buscar o artista completo.
-            faixas_na_biblioteca = [m for m in bib._colecao.values() if isinstance(m, FaixaMusical)]
-
+            faixas_na_biblioteca = [m for m in bib.obter_itens() if isinstance(m, FaixaMusical)]
             if not faixas_na_biblioteca:
                 print("⚠️  Nenhuma música na biblioteca ainda. Adicione uma primeiro (Opção 2).")
             else:
