@@ -35,8 +35,8 @@ def remover_criterio_ordenacao(nome):
 
 
 class Midia(ABC):
-    def __init__(self, id_deezer, titulo):
-        self.id_deezer = id_deezer
+    def __init__(self, id_externo, titulo):
+        self.id_externo = id_externo
         self.titulo = titulo
 
     @abstractmethod
@@ -57,8 +57,8 @@ class Reproduzivel(ABC):
         pass
 
 class FaixaMusical(Midia, Reproduzivel):
-    def __init__(self, id_deezer, titulo, artista, duracao_segundos, avaliacao=None, id_album=None, id_artista=None):
-        super().__init__(id_deezer, titulo)
+    def __init__(self, id_externo, titulo, artista, duracao_segundos, avaliacao=None, id_album=None, id_artista=None):
+        super().__init__(id_externo, titulo)
         self.artista = artista
         self.duracao_segundos = duracao_segundos
         self.id_album = id_album
@@ -91,8 +91,8 @@ class FaixaMusical(Midia, Reproduzivel):
         return f"> Tocando agora: {self.titulo} - {self.artista}"
     
 class Album(Midia, Reproduzivel):
-    def __init__(self, id_deezer, titulo):
-        super().__init__(id_deezer, titulo)
+    def __init__(self, id_externo, titulo):
+        super().__init__(id_externo, titulo)
         self._faixas = []
 
     def adicionar_faixa(self, faixa):
@@ -114,8 +114,8 @@ class Album(Midia, Reproduzivel):
             return f"> Tocando agora: {self.titulo} - {self.artista}"
 
 class Playlist(Midia, Reproduzivel):
-    def __init__(self, id_deezer, titulo):
-        super().__init__(id_deezer, titulo)
+    def __init__(self, id_externo, titulo):
+        super().__init__(id_externo, titulo)
         self._itens = []
 
     def adicionar_item(self, item):
@@ -161,8 +161,8 @@ class Playlist(Midia, Reproduzivel):
         return f"> Iniciando reprodução da playlist '{self.titulo}' ({len(self._itens)} itens)..."
 
 class Artista(Midia):
-    def __init__(self, id_deezer, titulo, musica_maior_sucesso=None):
-        super().__init__(id_deezer, titulo)
+    def __init__(self, id_externo, titulo, musica_maior_sucesso=None):
+        super().__init__(id_externo, titulo)
         self.musica_maior_sucesso = musica_maior_sucesso
         self._generos = []
         self._discografia = []
@@ -205,11 +205,11 @@ class Biblioteca:
         return list(self._colecao.values())
 
     def adicionar_midia(self, midia):
-        if midia.id_deezer in self._colecao:
+        if midia.id_externo in self._colecao:
             print(f"\n🚫 [BLOQUEADO] '{midia.titulo}' já está na biblioteca! (Duplicata recusada)")
             return False
         
-        self._colecao[midia.id_deezer] = midia
+        self._colecao[midia.id_externo] = midia
         print(f"\n✅ [SUCESSO] '{midia.titulo}' adicionado à biblioteca!")
         return True
 
