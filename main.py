@@ -194,7 +194,6 @@ if __name__ == "__main__":
                         escolha = int(input("\n👉 Digite o número da música desejada: ")) - 1
                         if 0 <= escolha < len(resultados):
                             musica_encontrada, id_album = resultados[escolha]
-                            ultimo_id_album = id_album
                             print(f"\n✨ Selecionada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista}")
                             avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
                         else:

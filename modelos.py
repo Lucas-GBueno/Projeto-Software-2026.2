@@ -111,7 +111,7 @@ class Album(Midia, Reproduzivel):
         return "\n".join(linhas)
 
     def play(self):
-            return f"> Tocando agora: {self.titulo} - {self.artista}"
+            return f"> Tocando agora: {self.titulo}"
 
 class Playlist(Midia, Reproduzivel):
     def __init__(self, id_externo, titulo):
