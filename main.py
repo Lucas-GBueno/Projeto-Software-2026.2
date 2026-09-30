@@ -248,7 +248,6 @@ if __name__ == "__main__":
 
                 elif len(resultados) == 1:
                     musica_encontrada, id_album = resultados[0]
-                    ultimo_id_album = id_album
                     print(f"\n✨ Encontrada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista} (⏱️ {musica_encontrada.duracao_segundos}s)")
                     avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
 
@@ -263,7 +262,6 @@ if __name__ == "__main__":
 
                         if 0 <= escolha < len(resultados):
                             musica_encontrada, id_album = resultados[escolha]
-                            ultimo_id_album = id_album # Guarda o ID do álbum escolhido para a opção 3
                             print(f"\n✨ Selecionada: 🎵 {musica_encontrada.titulo} - 🎤 {musica_encontrada.artista}")
                             avaliar_e_guardar(musica_encontrada, musicas_avaliadas)
                         else:
