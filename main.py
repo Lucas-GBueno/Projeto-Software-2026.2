@@ -1,6 +1,6 @@
 import random #import para criação de IDs
 
-from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, CRITERIOS_ORDENACAO, registrar_criterio_ordenacao, remover_criterio_ordenacao #import classes e estruturas do sistema
+from modelos import Biblioteca, Playlist, Reproduzivel, FaixaMusical, OrdenarPorAtributo, CRITERIOS_ORDENACAO, registrar_criterio_ordenacao, remover_criterio_ordenacao #import classes e estruturas do sistema
 
 from api import buscar_faixas, buscar_album, buscar_artista, nome_provedor_atual
 
@@ -91,12 +91,10 @@ def _adicionar_criterio_interativo():
     valor_padrao = _converter_valor_padrao(
         input("👉 Valor padrão para itens que não tiverem esse dado (ex: 0 — deixe em branco se não fizer sentido): ").strip()
     )
-    def chave(midia, _attr=atributo, _metodo=eh_metodo, _padrao=valor_padrao):
-        valor = getattr(midia, _attr, _padrao)
-        if _metodo:
-            valor = valor() if callable(valor) else _padrao
-        return _padrao if valor is None else valor
-    if registrar_criterio_ordenacao(nome, chave):
+    # POLIMORFISMO: o critério novo é um objeto CriterioOrdenacao, tratado pela
+    # Biblioteca exatamente como os critérios nativos (título, duração, avaliação).
+    criterio = OrdenarPorAtributo(nome, atributo, eh_metodo, valor_padrao)
+    if registrar_criterio_ordenacao(criterio):
         print(f"✅ Critério '{nome}' adicionado com sucesso!")
     else:
         print(f"🚫 Não foi possível adicionar '{nome}' (nome já existe).")

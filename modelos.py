@@ -1,29 +1,99 @@
 from abc import ABC, abstractmethod
 
-# RF10: registrador de critérios de ordenação. Novos critérios são
-# adicionados aqui (ou via registrar_criterio_ordenacao) sem que o método
-# de ordenação da Biblioteca precise ser alterado.
-CRITERIOS_ORDENACAO = {
-    'titulo': lambda midia: midia.titulo.lower(),
-    'duracao': lambda midia: midia.calcular_duracao(),
-    'avaliacao': lambda midia: getattr(midia, 'avaliacao', None) if getattr(midia, 'avaliacao', None) is not None else -1,
-}
+# RF10 (POLIMORFISMO / padrão Strategy): cada critério de ordenação é um OBJETO
+# que sabe calcular a "chave de comparação" de uma mídia. A Biblioteca ordena
+# chamando criterio.chave(midia) sem saber qual critério concreto está usando —
+# então adicionar um critério novo significa criar uma nova subclasse e
+# registrá-la, sem editar nenhuma das existentes nem o método de ordenação.
+class CriterioOrdenacao(ABC):
+    def __init__(self, nome):
+        self.nome = nome  # nome exibido no menu e usado como identificador no registro
+
+    # ABSTRAÇÃO: cada subclasse define sua própria regra de comparação.
+    @abstractmethod
+    def chave(self, midia):
+        pass
 
 
-def registrar_criterio_ordenacao(nome, funcao_chave):
+# HERANÇA + POLIMORFISMO: mesmo método chave(), uma regra diferente em cada subclasse.
+class OrdenarPorTitulo(CriterioOrdenacao):
+    def __init__(self):
+        super().__init__('titulo')
+
+    def chave(self, midia):
+        return midia.titulo.lower()
+
+
+class OrdenarPorDuracao(CriterioOrdenacao):
+    def __init__(self):
+        super().__init__('duracao')
+
+    def chave(self, midia):
+        return midia.calcular_duracao()
+
+
+class OrdenarPorAvaliacao(CriterioOrdenacao):
+    def __init__(self):
+        super().__init__('avaliacao')
+
+    def chave(self, midia):
+        # Só FaixaMusical tem avaliação; os demais tipos contam como -1 (ficam antes das avaliadas).
+        nota = getattr(midia, 'avaliacao', None)
+        return nota if nota is not None else -1
+
+
+class OrdenarPorAtributo(CriterioOrdenacao):
+    """
+    Critério genérico montado em tempo de execução (opção 12 do menu) a partir
+    de dados estruturados — nome de um atributo ou método já existente na
+    mídia, se ele precisa ser chamado, e um valor padrão para quem não tiver
+    esse dado. Evita aceitar código digitado livremente (equivalente a um eval()).
+    """
+    def __init__(self, nome, atributo, eh_metodo=False, valor_padrao=None):
+        super().__init__(nome)
+        # ENCAPSULAMENTO: a configuração do critério fica privada, só chave() a usa.
+        self._atributo = atributo
+        self._eh_metodo = eh_metodo
+        self._valor_padrao = valor_padrao
+
+    def chave(self, midia):
+        valor = getattr(midia, self._atributo, self._valor_padrao)
+        if self._eh_metodo:
+            valor = valor() if callable(valor) else self._valor_padrao
+        return self._valor_padrao if valor is None else valor
+
+
+# RF10: registro dos critérios disponíveis (nome -> objeto CriterioOrdenacao).
+# Novos critérios são adicionados aqui (ou via registrar_criterio_ordenacao) sem
+# que o método de ordenação da Biblioteca precise ser alterado.
+CRITERIOS_ORDENACAO = {c.nome: c for c in (OrdenarPorTitulo(), OrdenarPorDuracao(), OrdenarPorAvaliacao())}
+
+
+def registrar_criterio_ordenacao(criterio):
     """
     RF10: Adiciona um novo critério de ordenação sem tocar no código de
-    ordenação existente (nem nos critérios já registrados).
+    ordenação existente (nem nos critérios já registrados). Recebe um OBJETO
+    de qualquer subclasse de CriterioOrdenacao — o nome de registro é o
+    próprio criterio.nome.
 
     Se já existir um critério com esse nome, NÃO sobrescreve (retorna False):
     assim, registrar um critério novo nunca altera um que já estava inserido.
     Retorna True quando o critério foi adicionado.
+
+    Exemplo de uso, se o professor pedir ordenação por ano — basta uma nova
+    subclasse, sem editar nenhuma das existentes:
+        class OrdenarPorAno(CriterioOrdenacao):
+            def __init__(self):
+                super().__init__('ano')
+            def chave(self, midia):
+                return midia.ano
+        registrar_criterio_ordenacao(OrdenarPorAno())
     """
-    if not callable(funcao_chave):
-        raise TypeError("A função-chave do critério precisa ser chamável (ex: lambda midia: midia.ano).")
-    if nome in CRITERIOS_ORDENACAO:
+    if not isinstance(criterio, CriterioOrdenacao):
+        raise TypeError("O critério precisa ser uma instância de uma subclasse de CriterioOrdenacao.")
+    if criterio.nome in CRITERIOS_ORDENACAO:
         return False
-    CRITERIOS_ORDENACAO[nome] = funcao_chave
+    CRITERIOS_ORDENACAO[criterio.nome] = criterio
     return True
 
 
@@ -239,8 +309,8 @@ class Biblioteca:
             print("└─────────────────────────────────────────┘")
             return
 
-        funcao_chave = CRITERIOS_ORDENACAO.get(criterio)
-        if funcao_chave is None:
+        criterio_escolhido = CRITERIOS_ORDENACAO.get(criterio)
+        if criterio_escolhido is None:
             if CRITERIOS_ORDENACAO:
                 disponiveis = ", ".join(CRITERIOS_ORDENACAO.keys())
                 print(f"\n⚠️  Critério '{criterio}' não existe. Critérios disponíveis: {disponiveis}")
@@ -249,7 +319,9 @@ class Biblioteca:
             return
 
         try:
-            itens_ordenados = sorted(self._colecao.values(), key=funcao_chave, reverse=decrescente)
+            # POLIMORFISMO: sorted() chama criterio_escolhido.chave(midia) para cada item,
+            # sem saber qual subclasse de CriterioOrdenacao é (título, duração, atributo...).
+            itens_ordenados = sorted(self._colecao.values(), key=criterio_escolhido.chave, reverse=decrescente)
         except (AttributeError, TypeError, ValueError, KeyError) as erro:
             print(f"\n⚠️  O critério '{criterio}' não pôde ser aplicado a todos os itens ({type(erro).__name__}). Escolha outro critério.")
             return
