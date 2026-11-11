@@ -1,0 +1,1 @@
+"""Algoritmos intercambiáveis: Strategy."""
